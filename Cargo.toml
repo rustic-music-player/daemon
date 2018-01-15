@@ -1,0 +1,18 @@
+[package]
+name = "rustic-daemon"
+version = "0.1.0"
+authors = ["Max Jöhnk <maxjoehnk@gmail.com>"]
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.4.5"
+
+[dependencies.rustic-core]
+git = "https://github.com/rustic-music-player/core"
+
+[dependencies.rustic-http-frontend]
+git = "https://github.com/rustic-music-player/http-frontend"
+
+[dependencies.rustic-mpd-frontend]
+git = "https://github.com/rustic-music-player/mpd-frontend"
