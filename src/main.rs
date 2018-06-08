@@ -5,10 +5,14 @@ extern crate rustic_core as rustic;
 extern crate rustic_mpd_frontend as mpd;
 extern crate rustic_http_frontend as http;
 extern crate toml;
+extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 
 use std::sync::{Arc, RwLock};
 use std::fs::File;
 use std::io::prelude::*;
+use failure::Error;
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
@@ -25,7 +29,7 @@ fn read_config() -> Config {
     toml::from_str(config.as_str()).unwrap()
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let config = read_config();
     let mut providers: rustic::provider::SharedProviders = vec![];
     
@@ -34,6 +38,11 @@ fn main() {
     }
     if config.soundcloud.is_some() {
         providers.push(Arc::new(RwLock::new(Box::new(config.soundcloud.unwrap()))));
+    }
+
+    for provider in &providers {
+        let mut provider = provider.write().unwrap();
+        provider.setup()?;
     }
 
     let app = rustic::Rustic::new(providers);
@@ -48,4 +57,6 @@ fn main() {
     for handle in threads {
         let _ = handle.join();
     }
+
+    Ok(())
 }
