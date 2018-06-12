@@ -45,13 +45,13 @@ fn main() -> Result<(), Error> {
         provider.setup()?;
     }
 
-    let app = rustic::Rustic::new(providers);
+    let app = rustic::Rustic::new(providers)?;
     
     let threads = vec![
         mpd::start(config.mpd.clone(), Arc::clone(&app)),
         http::start(config.http.clone(), Arc::clone(&app)),
         rustic::sync::start(Arc::clone(&app)),
-        rustic::player::start(Arc::clone(&app)),
+        rustic::player::start(&app),
         rustic::cache::start(Arc::clone(&app))?
     ];
 
