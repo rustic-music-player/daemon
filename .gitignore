@@ -26,3 +26,6 @@ Thumbs.db
 
 # Configuration Files
 config.toml
+
+# Application Cache
+.cache
