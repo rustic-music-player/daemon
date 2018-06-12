@@ -8,6 +8,9 @@ extern crate toml;
 extern crate failure;
 #[macro_use]
 extern crate failure_derive;
+#[macro_use]
+extern crate log;
+extern crate env_logger;
 
 use std::sync::{Arc, RwLock};
 use std::fs::File;
@@ -30,6 +33,7 @@ fn read_config() -> Config {
 }
 
 fn main() -> Result<(), Error> {
+    env_logger::init();
     let config = read_config();
     let mut providers: rustic::provider::SharedProviders = vec![];
     
