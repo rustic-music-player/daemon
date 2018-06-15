@@ -22,7 +22,8 @@ pub struct Config {
     mpd: Option<mpd::MpdConfig>,
     http: Option<http::HttpConfig>,
     pocketcasts: Option<rustic::provider::PocketcastsProvider>,
-    soundcloud: Option<rustic::provider::SoundcloudProvider>
+    soundcloud: Option<rustic::provider::SoundcloudProvider>,
+    spotify: Option<rustic::provider::SpotifyProvider>
 }
 
 fn read_config() -> Config {
@@ -42,6 +43,9 @@ fn main() -> Result<(), Error> {
     }
     if config.soundcloud.is_some() {
         providers.push(Arc::new(RwLock::new(Box::new(config.soundcloud.unwrap()))));
+    }
+    if config.spotify.is_some() {
+        providers.push(Arc::new(RwLock::new(Box::new(config.spotify.unwrap()))));
     }
 
     for provider in &providers {

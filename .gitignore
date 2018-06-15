@@ -29,3 +29,4 @@ config.toml
 
 # Application Cache
 .cache
+.spotify_token_cache.json
