@@ -5,6 +5,7 @@ extern crate rustic_core as rustic;
 extern crate rustic_mpd_frontend as mpd;
 extern crate rustic_http_frontend as http;
 extern crate rustic_memory_store as memory_store;
+extern crate rustic_sqlite_store as sqlite_store;
 extern crate toml;
 extern crate failure;
 #[macro_use]
@@ -18,6 +19,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use failure::Error;
 use memory_store::MemoryLibrary;
+use sqlite_store::SqliteLibrary;
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
@@ -26,7 +28,17 @@ pub struct Config {
     pocketcasts: Option<rustic::provider::PocketcastsProvider>,
     soundcloud: Option<rustic::provider::SoundcloudProvider>,
     spotify: Option<rustic::provider::SpotifyProvider>,
-    local: Option<rustic::provider::LocalProvider>
+    local: Option<rustic::provider::LocalProvider>,
+    library: Option<LibraryConfig>
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(tag = "store", rename_all = "lowercase")]
+pub enum LibraryConfig {
+    Memory,
+    SQLite {
+        path: String
+    }
 }
 
 fn read_config() -> Config {
@@ -38,6 +50,7 @@ fn read_config() -> Config {
 
 fn main() -> Result<(), Error> {
     env_logger::init();
+
     let config = read_config();
     let mut providers: rustic::provider::SharedProviders = vec![];
     
@@ -59,9 +72,12 @@ fn main() -> Result<(), Error> {
         provider.setup()?;
     }
 
-    let store = MemoryLibrary::new();
+    let store: Box<rustic::Library> = match config.library.unwrap_or(LibraryConfig::Memory) {
+        LibraryConfig::Memory => Box::new(MemoryLibrary::new()),
+        LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?)
+    };
 
-    let app = rustic::Rustic::new(Box::new(store), providers)?;
+    let app = rustic::Rustic::new(store, providers)?;
     
     let threads = vec![
         mpd::start(config.mpd.clone(), Arc::clone(&app)),

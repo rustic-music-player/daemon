@@ -19,6 +19,9 @@ git = "https://github.com/rustic-music-player/core"
 [dependencies.rustic-memory-store]
 git = "https://github.com/rustic-music-player/memory-store"
 
+[dependencies.rustic-sqlite-store]
+git = "https://github.com/rustic-music-player/sqlite-store"
+
 [dependencies.rustic-http-frontend]
 git = "https://github.com/rustic-music-player/http-frontend"
 
