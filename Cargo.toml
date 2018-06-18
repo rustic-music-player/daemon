@@ -16,6 +16,9 @@ failure_derive = "0.1"
 [dependencies.rustic-core]
 git = "https://github.com/rustic-music-player/core"
 
+[dependencies.rustic-memory-store]
+git = "https://github.com/rustic-music-player/memory-store"
+
 [dependencies.rustic-http-frontend]
 git = "https://github.com/rustic-music-player/http-frontend"
 

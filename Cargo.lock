@@ -1551,7 +1551,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "rustic-core"
 version = "0.1.0"
-source = "git+https://github.com/rustic-music-player/core#42ad172f19b5a6e3eafbc60dee02a52ce567e475"
+source = "git+https://github.com/rustic-music-player/core#8fd47a24e0eddeeb257fc250078d993e87e65fc5"
 dependencies = [
  "cookie 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1586,6 +1586,7 @@ dependencies = [
  "log 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustic-core 0.1.0 (git+https://github.com/rustic-music-player/core)",
  "rustic-http-frontend 0.1.0 (git+https://github.com/rustic-music-player/http-frontend)",
+ "rustic-memory-store 0.1.0 (git+https://github.com/rustic-music-player/memory-store)",
  "rustic-mpd-frontend 0.1.0 (git+https://github.com/rustic-music-player/mpd-frontend)",
  "serde 1.0.66 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.66 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1596,7 +1597,7 @@ dependencies = [
 [[package]]
 name = "rustic-http-frontend"
 version = "0.1.0"
-source = "git+https://github.com/rustic-music-player/http-frontend#51e44a6b80f6a77ab608b07aadc815831d131edb"
+source = "git+https://github.com/rustic-music-player/http-frontend#9a271cd71f143ac013546672ef848a7a28d7daee"
 dependencies = [
  "actix-web 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1615,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "rustic-local-provider"
 version = "0.1.0"
-source = "git+https://github.com/rustic-music-player/core#42ad172f19b5a6e3eafbc60dee02a52ce567e475"
+source = "git+https://github.com/rustic-music-player/core#8fd47a24e0eddeeb257fc250078d993e87e65fc5"
 dependencies = [
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "id3 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1624,9 +1625,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustic-memory-store"
+version = "0.1.0"
+source = "git+https://github.com/rustic-music-player/memory-store#925df749d50152399846989bee1573975c8bad15"
+dependencies = [
+ "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustic-core 0.1.0 (git+https://github.com/rustic-music-player/core)",
+]
+
+[[package]]
 name = "rustic-mpd-frontend"
 version = "0.1.0"
-source = "git+https://github.com/rustic-music-player/mpd-frontend#ddf3b5aa2570608d9fc299c80ae7a92a6e5fd087"
+source = "git+https://github.com/rustic-music-player/mpd-frontend#a510d29cb1276344586cef2f07c2c1d69a62b3ca"
 dependencies = [
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2539,6 +2550,7 @@ dependencies = [
 "checksum rustic-core 0.1.0 (git+https://github.com/rustic-music-player/core)" = "<none>"
 "checksum rustic-http-frontend 0.1.0 (git+https://github.com/rustic-music-player/http-frontend)" = "<none>"
 "checksum rustic-local-provider 0.1.0 (git+https://github.com/rustic-music-player/core)" = "<none>"
+"checksum rustic-memory-store 0.1.0 (git+https://github.com/rustic-music-player/memory-store)" = "<none>"
 "checksum rustic-mpd-frontend 0.1.0 (git+https://github.com/rustic-music-player/mpd-frontend)" = "<none>"
 "checksum safemem 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e27a8b19b835f7aea908818e871f5cc3a5a186550c30773be987e155e8163d8f"
 "checksum same-file 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "cfb6eded0b06a0b512c8ddbcf04089138c9b4362c2f696f3c3d76039d68f3637"

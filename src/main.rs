@@ -4,6 +4,7 @@ extern crate serde_derive;
 extern crate rustic_core as rustic;
 extern crate rustic_mpd_frontend as mpd;
 extern crate rustic_http_frontend as http;
+extern crate rustic_memory_store as memory_store;
 extern crate toml;
 extern crate failure;
 #[macro_use]
@@ -16,6 +17,7 @@ use std::sync::{Arc, RwLock};
 use std::fs::File;
 use std::io::prelude::*;
 use failure::Error;
+use memory_store::MemoryLibrary;
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
@@ -57,7 +59,9 @@ fn main() -> Result<(), Error> {
         provider.setup()?;
     }
 
-    let app = rustic::Rustic::new(providers)?;
+    let store = MemoryLibrary::new();
+
+    let app = rustic::Rustic::new(Box::new(store), providers)?;
     
     let threads = vec![
         mpd::start(config.mpd.clone(), Arc::clone(&app)),
