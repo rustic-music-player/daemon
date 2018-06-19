@@ -13,8 +13,9 @@ extern crate failure_derive;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
+extern crate ctrlc;
 
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Condvar, Mutex};
 use std::fs::File;
 use std::io::prelude::*;
 use failure::Error;
@@ -78,13 +79,25 @@ fn main() -> Result<(), Error> {
     };
 
     let app = rustic::Rustic::new(store, providers)?;
+
+    let keep_running = Arc::new((Mutex::new(true), Condvar::new()));
+
+    let interrupt = Arc::clone(&keep_running);
+
+    ctrlc::set_handler(move || {
+        info!("Shutting down");
+        let &(ref lock, ref cvar) = &*interrupt;
+        let mut running = lock.lock().unwrap();
+        *running = false;
+        cvar.notify_all();
+    })?;
     
     let threads = vec![
-        mpd::start(config.mpd.clone(), Arc::clone(&app)),
+        // mpd::start(config.mpd.clone(), Arc::clone(&app)),
         http::start(config.http.clone(), Arc::clone(&app)),
-        rustic::sync::start(Arc::clone(&app))?,
-        rustic::player::start(&app),
-        rustic::cache::start(Arc::clone(&app))?
+        rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
+        rustic::player::start(&app, Arc::clone(&keep_running))?,
+        rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
     ];
 
     for handle in threads {
