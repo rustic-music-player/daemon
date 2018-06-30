@@ -2,6 +2,10 @@
 name = "rustic-daemon"
 version = "0.1.0"
 authors = ["Max Jöhnk <maxjoehnk@gmail.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+repository = "https://github.com/rustic-music-player/daemon"
+homepage = "https://github.com/rustic-music-player/daemon"
 
 [dependencies]
 env_logger = "0.5"
