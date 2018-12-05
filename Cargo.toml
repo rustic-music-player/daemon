@@ -30,8 +30,8 @@ git = "https://github.com/rustic-music-player/sqlite-store"
 [dependencies.rustic-http-frontend]
 git = "https://github.com/rustic-music-player/http-frontend"
 
-#[dependencies.rustic-mpd-frontend]
-#git = "https://github.com/rustic-music-player/mpd-frontend"
+[dependencies.rustic-mpd-frontend]
+git = "https://github.com/rustic-music-player/mpd-frontend"
 
 [dependencies.rustic-gstreamer-backend]
 git = "https://github.com/rustic-music-player/gstreamer-backend"

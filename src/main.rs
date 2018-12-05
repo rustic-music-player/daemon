@@ -2,7 +2,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate rustic_core as rustic;
-// extern crate rustic_mpd_frontend as mpd;
+extern crate rustic_mpd_frontend as mpd;
 extern crate rustic_http_frontend as http;
 extern crate rustic_memory_store as memory_store;
 extern crate rustic_sqlite_store as sqlite_store;
@@ -25,7 +25,7 @@ use sqlite_store::SqliteLibrary;
 
 #[derive(Deserialize, Clone, Default)]
 pub struct Config {
-    // mpd: Option<mpd::MpdConfig>,
+    mpd: Option<mpd::MpdConfig>,
     http: Option<http::HttpConfig>,
     pocketcasts: Option<rustic::provider::PocketcastsProvider>,
     soundcloud: Option<rustic::provider::SoundcloudProvider>,
@@ -114,7 +114,7 @@ fn main() -> Result<(), Error> {
     })?;
     
     let threads = vec![
-        // mpd::start(config.mpd.clone(), Arc::clone(&app)),
+        mpd::start(config.mpd.clone(), Arc::clone(&app)),
         http::start(config.http.clone(), Arc::clone(&app)),
         rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
         rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
