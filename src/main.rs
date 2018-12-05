@@ -1,12 +1,6 @@
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate rustic_core as rustic;
-extern crate rustic_mpd_frontend as mpd;
-extern crate rustic_http_frontend as http;
-extern crate rustic_memory_store as memory_store;
-extern crate rustic_sqlite_store as sqlite_store;
-extern crate rustic_gstreamer_backend as gst_backend;
 extern crate toml;
 extern crate failure;
 #[macro_use]
@@ -15,6 +9,26 @@ extern crate failure_derive;
 extern crate log;
 extern crate env_logger;
 extern crate ctrlc;
+
+// Core
+extern crate rustic_core as rustic;
+
+// Frontends
+extern crate rustic_mpd_frontend as mpd_frontend;
+extern crate rustic_http_frontend as http_frontend;
+
+// Stores
+extern crate rustic_memory_store as memory_store;
+extern crate rustic_sqlite_store as sqlite_store;
+
+// Backends
+extern crate rustic_gstreamer_backend as gst_backend;
+
+// Provider
+extern crate rustic_local_provider as local_provider;
+extern crate rustic_spotify_provider as spotify_provider;
+extern crate rustic_soundcloud_provider as soundcloud_provider;
+extern crate rustic_pocketcasts_provider as pocketcasts_provider;
 
 use std::sync::{Arc, RwLock, Condvar, Mutex};
 use std::fs::File;
@@ -25,12 +39,12 @@ use sqlite_store::SqliteLibrary;
 
 #[derive(Deserialize, Clone, Default)]
 pub struct Config {
-    mpd: Option<mpd::MpdConfig>,
-    http: Option<http::HttpConfig>,
-    pocketcasts: Option<rustic::provider::PocketcastsProvider>,
-    soundcloud: Option<rustic::provider::SoundcloudProvider>,
-    spotify: Option<rustic::provider::SpotifyProvider>,
-    local: Option<rustic::provider::LocalProvider>,
+    mpd: Option<mpd_frontend::MpdConfig>,
+    http: Option<http_frontend::HttpConfig>,
+    pocketcasts: Option<pocketcasts_provider::PocketcastsProvider>,
+    soundcloud: Option<soundcloud_provider::SoundcloudProvider>,
+    spotify: Option<spotify_provider::SpotifyProvider>,
+    local: Option<local_provider::LocalProvider>,
     library: Option<LibraryConfig>,
     #[serde(default)]
     backend: BackendConfig
@@ -114,8 +128,8 @@ fn main() -> Result<(), Error> {
     })?;
     
     let threads = vec![
-        mpd::start(config.mpd.clone(), Arc::clone(&app)),
-        http::start(config.http.clone(), Arc::clone(&app)),
+        mpd_frontend::start(config.mpd.clone(), Arc::clone(&app)),
+        http_frontend::start(config.http.clone(), Arc::clone(&app)),
         rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
         rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
     ];

@@ -35,3 +35,15 @@ git = "https://github.com/rustic-music-player/mpd-frontend"
 
 [dependencies.rustic-gstreamer-backend]
 git = "https://github.com/rustic-music-player/gstreamer-backend"
+
+[dependencies.rustic-local-provider]
+git = "https://github.com/rustic-music-player/local-provider"
+
+[dependencies.rustic-spotify-provider]
+git = "https://github.com/rustic-music-player/spotify-provider"
+
+[dependencies.rustic-pocketcasts-provider]
+git = "https://github.com/rustic-music-player/pocketcasts-provider"
+
+[dependencies.rustic-soundcloud-provider]
+git = "https://github.com/rustic-music-player/soundcloud-provider"
