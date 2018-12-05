@@ -32,3 +32,6 @@ git = "https://github.com/rustic-music-player/http-frontend"
 
 [dependencies.rustic-mpd-frontend]
 git = "https://github.com/rustic-music-player/mpd-frontend"
+
+[dependencies.rustic-gstreamer-backend]
+git = "https://github.com/rustic-music-player/gstreamer-backend"

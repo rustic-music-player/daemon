@@ -6,6 +6,7 @@ extern crate rustic_mpd_frontend as mpd;
 extern crate rustic_http_frontend as http;
 extern crate rustic_memory_store as memory_store;
 extern crate rustic_sqlite_store as sqlite_store;
+extern crate rustic_gstreamer_backend as gst_backend;
 extern crate toml;
 extern crate failure;
 #[macro_use]
@@ -22,7 +23,7 @@ use failure::Error;
 use memory_store::MemoryLibrary;
 use sqlite_store::SqliteLibrary;
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Default)]
 pub struct Config {
     mpd: Option<mpd::MpdConfig>,
     http: Option<http::HttpConfig>,
@@ -30,7 +31,9 @@ pub struct Config {
     soundcloud: Option<rustic::provider::SoundcloudProvider>,
     spotify: Option<rustic::provider::SpotifyProvider>,
     local: Option<rustic::provider::LocalProvider>,
-    library: Option<LibraryConfig>
+    library: Option<LibraryConfig>,
+    #[serde(default)]
+    backend: BackendConfig
 }
 
 #[derive(Deserialize, Clone)]
@@ -39,6 +42,19 @@ pub enum LibraryConfig {
     Memory,
     SQLite {
         path: String
+    }
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum BackendConfig {
+    GStreamer,
+    Rodio
+}
+
+impl Default for BackendConfig {
+    fn default() -> BackendConfig {
+        BackendConfig::GStreamer
     }
 }
 
@@ -78,7 +94,12 @@ fn main() -> Result<(), Error> {
         LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?)
     };
 
-    let app = rustic::Rustic::new(store, providers)?;
+    let backend = match config.backend {
+        BackendConfig::GStreamer => gst_backend::GstBackend::new()?,
+        _ => panic!("invalid backend config")
+    };
+
+    let app = rustic::Rustic::new(store, providers, backend)?;
 
     let keep_running = Arc::new((Mutex::new(true), Condvar::new()));
 
@@ -93,10 +114,9 @@ fn main() -> Result<(), Error> {
     })?;
     
     let threads = vec![
-        // mpd::start(config.mpd.clone(), Arc::clone(&app)),
+        mpd::start(config.mpd.clone(), Arc::clone(&app)),
         http::start(config.http.clone(), Arc::clone(&app)),
         rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
-        rustic::player::start(&app, Arc::clone(&keep_running))?,
         rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
     ];
 
