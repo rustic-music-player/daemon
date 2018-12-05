@@ -127,12 +127,20 @@ fn main() -> Result<(), Error> {
         cvar.notify_all();
     })?;
     
-    let threads = vec![
-        mpd_frontend::start(config.mpd.clone(), Arc::clone(&app)),
-        http_frontend::start(config.http.clone(), Arc::clone(&app)),
+    let mut threads = vec![
         rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
         rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
     ];
+
+    if config.mpd.is_some() {
+        let mpd_thread = mpd_frontend::start(config.mpd.clone(), Arc::clone(&app));
+        threads.push(mpd_thread);
+    }
+
+    if config.http.is_some() {
+        let http_thread = http_frontend::start(config.http.clone(), Arc::clone(&app));
+        threads.push(http_thread);
+    }
 
     for handle in threads {
         let _ = handle.join();
