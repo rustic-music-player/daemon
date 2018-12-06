@@ -1,21 +1,21 @@
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate toml;
 extern crate failure;
+extern crate toml;
 #[macro_use]
 extern crate failure_derive;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
 extern crate ctrlc;
+extern crate env_logger;
 
 // Core
 extern crate rustic_core as rustic;
 
 // Frontends
-extern crate rustic_mpd_frontend as mpd_frontend;
 extern crate rustic_http_frontend as http_frontend;
+extern crate rustic_mpd_frontend as mpd_frontend;
 
 // Stores
 extern crate rustic_memory_store as memory_store;
@@ -26,16 +26,16 @@ extern crate rustic_gstreamer_backend as gst_backend;
 
 // Provider
 extern crate rustic_local_provider as local_provider;
-extern crate rustic_spotify_provider as spotify_provider;
-extern crate rustic_soundcloud_provider as soundcloud_provider;
 extern crate rustic_pocketcasts_provider as pocketcasts_provider;
+extern crate rustic_soundcloud_provider as soundcloud_provider;
+extern crate rustic_spotify_provider as spotify_provider;
 
-use std::sync::{Arc, RwLock, Condvar, Mutex};
-use std::fs::File;
-use std::io::prelude::*;
 use failure::Error;
 use memory_store::MemoryLibrary;
 use sqlite_store::SqliteLibrary;
+use std::fs::File;
+use std::io::prelude::*;
+use std::sync::{Arc, Condvar, Mutex, RwLock};
 
 #[derive(Deserialize, Clone, Default)]
 pub struct Config {
@@ -47,23 +47,21 @@ pub struct Config {
     local: Option<local_provider::LocalProvider>,
     library: Option<LibraryConfig>,
     #[serde(default)]
-    backend: BackendConfig
+    backend: BackendConfig,
 }
 
 #[derive(Deserialize, Clone)]
 #[serde(tag = "store", rename_all = "lowercase")]
 pub enum LibraryConfig {
     Memory,
-    SQLite {
-        path: String
-    }
+    SQLite { path: String },
 }
 
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum BackendConfig {
     GStreamer,
-    Rodio
+    Rodio,
 }
 
 impl Default for BackendConfig {
@@ -84,7 +82,7 @@ fn main() -> Result<(), Error> {
 
     let config = read_config();
     let mut providers: rustic::provider::SharedProviders = vec![];
-    
+
     if config.pocketcasts.is_some() {
         providers.push(Arc::new(RwLock::new(Box::new(config.pocketcasts.unwrap()))));
     }
@@ -105,12 +103,12 @@ fn main() -> Result<(), Error> {
 
     let store: Box<rustic::Library> = match config.library.unwrap_or(LibraryConfig::Memory) {
         LibraryConfig::Memory => Box::new(MemoryLibrary::new()),
-        LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?)
+        LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?),
     };
 
     let backend = match config.backend {
         BackendConfig::GStreamer => gst_backend::GstBackend::new()?,
-        _ => panic!("invalid backend config")
+        _ => panic!("invalid backend config"),
     };
 
     let app = rustic::Rustic::new(store, providers, backend)?;
@@ -126,10 +124,10 @@ fn main() -> Result<(), Error> {
         *running = false;
         cvar.notify_all();
     })?;
-    
+
     let mut threads = vec![
         rustic::sync::start(Arc::clone(&app), Arc::clone(&keep_running))?,
-        rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?
+        rustic::cache::start(Arc::clone(&app), Arc::clone(&keep_running))?,
     ];
 
     if config.mpd.is_some() {
