@@ -98,7 +98,9 @@ fn main() -> Result<(), Error> {
 
     for provider in &providers {
         let mut provider = provider.write().unwrap();
-        provider.setup()?;
+        provider.setup().unwrap_or_else(|err| {
+            error!("Can't setup {} provider: {:?}", provider.title(), err)
+        });
     }
 
     let store: Box<rustic::Library> = match config.library.unwrap_or(LibraryConfig::Memory) {
