@@ -4,8 +4,6 @@ extern crate serde_derive;
 extern crate failure;
 extern crate toml;
 #[macro_use]
-extern crate failure_derive;
-#[macro_use]
 extern crate log;
 extern crate ctrlc;
 extern crate env_logger;
