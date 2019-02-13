@@ -18,31 +18,31 @@ failure = "0.1"
 ctrlc = { version = "3.1", features = ["termination"] }
 
 [dependencies.rustic-core]
-git = "https://github.com/rustic-music-player/core"
+path = "../../core"
 
 [dependencies.rustic-memory-store]
-git = "https://github.com/rustic-music-player/memory-store"
+path = "../../store/memory"
 
 [dependencies.rustic-sqlite-store]
-git = "https://github.com/rustic-music-player/sqlite-store"
+path = "../../store/sqlite"
 
 [dependencies.rustic-http-frontend]
-git = "https://github.com/rustic-music-player/http-frontend"
+path = "../../frontend/http"
 
 [dependencies.rustic-mpd-frontend]
-git = "https://github.com/rustic-music-player/mpd-frontend"
+path = "../../frontend/mpd"
 
 [dependencies.rustic-gstreamer-backend]
-git = "https://github.com/rustic-music-player/gstreamer-backend"
+path = "../../backend/gstreamer"
 
 [dependencies.rustic-local-provider]
-git = "https://github.com/rustic-music-player/local-provider"
+path = "../../provider/local"
 
 [dependencies.rustic-spotify-provider]
-git = "https://github.com/rustic-music-player/spotify-provider"
+path = "../../provider/spotify"
 
 [dependencies.rustic-pocketcasts-provider]
-git = "https://github.com/rustic-music-player/pocketcasts-provider"
+path = "../../provider/pocketcasts"
 
 [dependencies.rustic-soundcloud-provider]
-git = "https://github.com/rustic-music-player/soundcloud-provider"
+path = "../../provider/soundcloud"
