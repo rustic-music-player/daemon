@@ -55,7 +55,7 @@ pub enum LibraryConfig {
     SQLite { path: String },
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum BackendConfig {
     GStreamer,
@@ -111,7 +111,12 @@ fn main() -> Result<(), Error> {
         _ => panic!("invalid backend config"),
     };
 
-    let app = rustic::Rustic::new(store, providers, backend)?;
+    let app = rustic::Rustic::new(store, providers, Arc::clone(&backend))?;
+
+    if config.backend == BackendConfig::GStreamer {
+        let backend = backend.as_any().downcast_ref::<gst_backend::GstBackend>().unwrap();
+        backend.set_core(Arc::clone(&app));
+    }
 
     let keep_running = Arc::new((Mutex::new(true), Condvar::new()));
 
