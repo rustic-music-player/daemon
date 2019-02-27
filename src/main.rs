@@ -106,17 +106,17 @@ fn main() -> Result<(), Error> {
         LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?),
     };
 
+    let app = rustic::Rustic::new(store, providers)?;
+
     let backend = match config.backend {
-        BackendConfig::GStreamer => gst_backend::GstBackend::new()?,
+        BackendConfig::GStreamer => gst_backend::GstBackend::new(Arc::clone(&app))?,
         _ => panic!("invalid backend config"),
     };
 
-    let app = rustic::Rustic::new(store, providers, Arc::clone(&backend))?;
+    let default_backend_id = String::from("default");
 
-    if config.backend == BackendConfig::GStreamer {
-        let backend = backend.as_any().downcast_ref::<gst_backend::GstBackend>().unwrap();
-        backend.set_core(Arc::clone(&app));
-    }
+    app.add_player(default_backend_id.clone(), backend);
+    app.set_default_player(default_backend_id);
 
     let keep_running = Arc::new((Mutex::new(true), Condvar::new()));
 
