@@ -28,94 +28,38 @@ extern crate rustic_pocketcasts_provider as pocketcasts_provider;
 extern crate rustic_soundcloud_provider as soundcloud_provider;
 extern crate rustic_spotify_provider as spotify_provider;
 
+mod config;
+
 use failure::Error;
 use memory_store::MemoryLibrary;
 use sqlite_store::SqliteLibrary;
-use std::fs::File;
-use std::io::prelude::*;
 use std::sync::{Arc, Condvar, Mutex, RwLock};
 
-#[derive(Deserialize, Clone, Default)]
-pub struct Config {
-    mpd: Option<mpd_frontend::MpdConfig>,
-    http: Option<http_frontend::HttpConfig>,
-    pocketcasts: Option<pocketcasts_provider::PocketcastsProvider>,
-    soundcloud: Option<soundcloud_provider::SoundcloudProvider>,
-    spotify: Option<spotify_provider::SpotifyProvider>,
-    local: Option<local_provider::LocalProvider>,
-    library: Option<LibraryConfig>,
-    #[serde(default)]
-    backend: BackendConfig,
-}
-
-#[derive(Deserialize, Clone)]
-#[serde(tag = "store", rename_all = "lowercase")]
-pub enum LibraryConfig {
-    Memory,
-    SQLite { path: String },
-}
-
-#[derive(Deserialize, Clone, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum BackendConfig {
-    GStreamer,
-    Rodio,
-}
-
-impl Default for BackendConfig {
-    fn default() -> BackendConfig {
-        BackendConfig::GStreamer
-    }
-}
-
-fn read_config() -> Config {
-    let mut config_file = File::open("config.toml").unwrap();
-    let mut config = String::new();
-    config_file.read_to_string(&mut config).unwrap();
-    toml::from_str(config.as_str()).unwrap()
-}
+use config::*;
 
 fn main() -> Result<(), Error> {
     env_logger::init();
 
     let config = read_config();
-    let mut providers: rustic::provider::SharedProviders = vec![];
 
-    if config.pocketcasts.is_some() {
-        providers.push(Arc::new(RwLock::new(Box::new(config.pocketcasts.unwrap()))));
-    }
-    if config.soundcloud.is_some() {
-        providers.push(Arc::new(RwLock::new(Box::new(config.soundcloud.unwrap()))));
-    }
-    if config.spotify.is_some() {
-        providers.push(Arc::new(RwLock::new(Box::new(config.spotify.unwrap()))));
-    }
-    if config.local.is_some() {
-        providers.push(Arc::new(RwLock::new(Box::new(config.local.unwrap()))));
-    }
-
-    for provider in &providers {
-        let mut provider = provider.write().unwrap();
-        provider.setup().unwrap_or_else(|err| {
-            error!("Can't setup {} provider: {:?}", provider.title(), err)
-        });
-    }
+    let providers = setup_providers(&config);
 
     let store: Box<rustic::Library> = match config.library.unwrap_or(LibraryConfig::Memory) {
         LibraryConfig::Memory => Box::new(MemoryLibrary::new()),
         LibraryConfig::SQLite { path } => Box::new(SqliteLibrary::new(path)?),
     };
 
-    let backend = match config.backend {
-        BackendConfig::GStreamer => gst_backend::GstBackend::new()?,
-        _ => panic!("invalid backend config"),
-    };
+    let app = rustic::Rustic::new(store, providers)?;
 
-    let app = rustic::Rustic::new(store, providers, Arc::clone(&backend))?;
-
-    if config.backend == BackendConfig::GStreamer {
-        let backend = backend.as_any().downcast_ref::<gst_backend::GstBackend>().unwrap();
-        backend.set_core(Arc::clone(&app));
+    for player in config.players.iter() {
+        let backend = match player.backend_type {
+            PlayerBackend::GStreamer => gst_backend::GstBackend::new(Arc::clone(&app))?,
+            _ => panic!("invalid backend config"),
+        };
+        app.add_player(player.name.clone(), backend);
+        if player.default {
+            app.set_default_player(player.name.clone());
+        }
     }
 
     let keep_running = Arc::new((Mutex::new(true), Condvar::new()));
@@ -150,4 +94,29 @@ fn main() -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+fn setup_providers(config: &Config) -> rustic::provider::SharedProviders {
+    let mut providers: rustic::provider::SharedProviders = vec![];
+
+    if let Some(pocketcasts) = config.pocketcasts.clone() {
+        providers.push(Arc::new(RwLock::new(Box::new(pocketcasts))));
+    }
+    if let Some(soundcloud) = config.soundcloud.clone() {
+        providers.push(Arc::new(RwLock::new(Box::new(soundcloud))));
+    }
+    if let Some(spotify) = config.spotify.clone() {
+        providers.push(Arc::new(RwLock::new(Box::new(spotify))));
+    }
+    if let Some(local) = config.local.clone() {
+        providers.push(Arc::new(RwLock::new(Box::new(local))));
+    }
+    for provider in &providers {
+        let mut provider = provider.write().unwrap();
+        provider.setup().unwrap_or_else(|err| {
+            error!("Can't setup {} provider: {:?}", provider.title(), err)
+        });
+    }
+
+    providers
 }
